@@ -115,6 +115,27 @@ const initialAgentStates = {
 };
 
 export default function Home() {
+  const printResult = async () => {
+    // Wait for web fonts and the final paint before opening the browser's PDF dialog.
+    // This prevents partially rendered cards (especially emoji/SVG artwork) in print preview.
+    if (document.fonts?.ready) {
+      await document.fonts.ready;
+    }
+
+    document.body.classList.add('printing-result');
+    await new Promise((resolve) => requestAnimationFrame(() => requestAnimationFrame(resolve)));
+    window.print();
+  };
+
+  useEffect(() => {
+    const finishPrinting = () => document.body.classList.remove('printing-result');
+    window.addEventListener('afterprint', finishPrinting);
+    return () => {
+      window.removeEventListener('afterprint', finishPrinting);
+      finishPrinting();
+    };
+  }, []);
+
   const [activeTab, setActiveTab] = useState('learning');
   const [selectedDetail, setSelectedDetail] = useState(null);
 
@@ -788,7 +809,7 @@ export default function Home() {
                         </div>
 
                         <div className="preview-actions">
-                          <button className="action-btn print-btn" onClick={() => window.print()}>
+                          <button className="action-btn print-btn" onClick={printResult}>
                             <span>🖨️ 인쇄 / PDF로 저장</span>
                           </button>
                         </div>
