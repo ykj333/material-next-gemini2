@@ -153,6 +153,8 @@ export default function Home() {
   const [obfuscatedKey, setObfuscatedKey] = useState('');
   const [keySource, setKeySource] = useState(null);
   const [tempKey, setTempKey] = useState('');
+  const [openAiApiKey, setOpenAiApiKey] = useState('');
+  const [tempOpenAiKey, setTempOpenAiKey] = useState('');
   const [isRealMode, setIsRealMode] = useState(false);
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
 
@@ -207,23 +209,59 @@ export default function Home() {
     setObfuscatedKey(obfuscated);
     setKeySource('manual');
     setIsRealMode(true);
-    alert('API Key가 연동되었으며 실제 생성 모드로 자동 설정되었습니다.');
+    setOpenAiApiKey(tempOpenAiKey.trim());
+    alert('Gemini 콘텐츠 생성 키가 연동되었습니다. OpenAI 키를 입력했거나 서버에 OPENAI_API_KEY가 설정되어 있으면 gpt-image-2 이미지 생성이 활성화됩니다.');
   };
 
   // 프롬프트 생성 규칙
   const handleGeneratePrompt = () => {
     const templates = {
-      storybook: `📖 그림책 제작 프롬프트\n\n[텍스트 생성]\n만 ${age}세 유아 대상 "${topic}" 그림책 이야기 8페이지 분량. 각 페이지마다 간단한 문장 2-3개로 작성.\n\n[이미지 생성]\n"nano-banana 2" 드로잉 모델 스타일로 밝고 친근하며 따뜻한 색감의 캐릭터 및 풍경 일러스트 삽화 묘사 생성.`,
-      flashcard: `🃏 플래시카드 제작 프롬프트\n\n[콘텐츠 생성]\n만 ${age}세 유아 대상 "${topic}" 단어/그림 카드 10장 목록 및 핵심 교육 안내 설명.\n\n[이미지 생성]\n"nano-banana 2" 드로잉 모델 스타일의 큰 개별 사물 삽화 렌더링. 배경은 단색 혹은 공백.`,
-      worksheet: `📝 워크시트 제작 프롬프트\n\n[활동 설계]\n만 ${age}세 유아 대상 "${topic}" 단어 따라 쓰기 및 색칠하기 등이 포함된 학습 활동지 설계.\n\n[삽화 생성]\n"nano-banana 2" 드로잉 모델 기반의 깔끔한 검정색 외곽선 흑백 라인아트 도안 디자인.`,
-      pattern: `✂️ 교구 패턴 제작 프롬프트\n\n[도안 설계]\n만 ${age}세 유아 대상 "${topic}" 종이 만들기 패턴 구성 요소 및 부착 방식 가이드라인.\n\n[패턴 생성]\n"nano-banana 2" 도안 모델 기반의 자르기 쉬운 단순한 2D 형태 및 풀칠 날개, 점선 조각 이미지 렌더링.`,
-      puzzle: `🧩 퍼즐/게임 제작 프롬프트\n\n[게임 기획]\n만 ${age}세 유아 대상 "${topic}" 테마 카드 매칭 퍼즐 규칙 및 디자인.\n\n[삽화 생성]\n"nano-banana 2" 드로잉 모델 스타일로 친근하고 흥미로운 카드 뒷면 및 매칭 사물 그래픽 자산 렌더링.`
+      storybook: `📖 그림책 제작 프롬프트\n\n[텍스트 생성]\n만 ${age}세 유아 대상 "${topic}" 그림책 이야기 8페이지 분량. 각 페이지마다 간단한 문장 2-3개로 작성.\n\n[이미지 생성]\ngpt-image-2 최고 품질(high)로 밝고 친근하며 따뜻한 색감의 일관된 캐릭터와 풍경 삽화를 생성.`,
+      flashcard: `🃏 플래시카드 제작 프롬프트\n\n[콘텐츠 생성]\n만 ${age}세 유아 대상 "${topic}" 단어/그림 카드와 핵심 교육 안내 설명.\n\n[이미지 생성]\ngpt-image-2 최고 품질(high)로 중심 사물이 크고 명확한 정사각형 삽화를 생성.`,
+      worksheet: `📝 워크시트 제작 프롬프트\n\n[활동 설계]\n만 ${age}세 유아 대상 "${topic}" 단어 따라 쓰기 및 색칠하기 등이 포함된 학습 활동지 설계.\n\n[삽화 생성]\ngpt-image-2 최고 품질(high)로 굵고 닫힌 검정 외곽선의 인쇄용 라인아트를 생성.`,
+      pattern: `✂️ 교구 패턴 제작 프롬프트\n\n[도안 설계]\n만 ${age}세 유아 대상 "${topic}" 종이 만들기 패턴 구성 요소 및 부착 방식 가이드라인.\n\n[패턴 생성]\ngpt-image-2 최고 품질(high)로 자르기 선과 접기 선이 명확한 세로형 인쇄 도안을 생성.`,
+      puzzle: `🧩 퍼즐/게임 제작 프롬프트\n\n[게임 기획]\n만 ${age}세 유아 대상 "${topic}" 테마 카드 매칭 퍼즐 규칙 및 디자인.\n\n[삽화 생성]\ngpt-image-2 최고 품질(high)로 친근하고 식별하기 쉬운 정사각형 카드 삽화를 생성.`
     };
     setPromptText(templates[materialType] || '');
   };
 
   // 비동기 슬립 헬퍼
   const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
+
+  const generateVisualAssets = async (contentData, addLog) => {
+    const enrichedData = JSON.parse(JSON.stringify(contentData));
+    const collection = materialType === 'storybook'
+      ? enrichedData.pages
+      : (materialType === 'flashcard' || materialType === 'puzzle' ? enrichedData.cards : null);
+    const targets = Array.isArray(collection) ? collection : [enrichedData];
+
+    for (let index = 0; index < targets.length; index += 1) {
+      addLog(`[gpt-image-2] 고품질 이미지 ${index + 1}/${targets.length} 생성 중...`, 'illustrator');
+      const response = await fetch('/api/generate-image', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          type: materialType,
+          topic,
+          age,
+          style,
+          additional,
+          item: targets[index],
+          index,
+          storyContext: materialType === 'storybook' ? targets.map((page) => page.text).join(' ') : '',
+          openAiKey: openAiApiKey
+        })
+      });
+      const result = await response.json();
+      if (!result.success) throw new Error(result.message || `이미지 ${index + 1} 생성 실패`);
+
+      targets[index].imageDataUrl = result.imageDataUrl;
+      targets[index].imagePrompt = result.imagePrompt;
+      enrichedData.imageGeneration = result.imageGeneration;
+    }
+
+    return enrichedData;
+  };
 
   // 에이전트 오케스트레이션 실행 (시뮬레이션 혹은 실제 API 생성)
   const handleRunOrchestration = async () => {
@@ -282,8 +320,8 @@ export default function Home() {
       await sleep(600);
       addLog(`Gemini API를 호출하여 만 ${age}세 맞춤형 학습 콘텐츠를 실제 생성 중입니다. 잠시만 기다려 주세요...`, 'writer');
       
-      setNodeState('illustrator', 'active', 'nano-banana 2 드로잉 자산 렌더링 중');
-      addLog(`[드로잉 전문가] "nano-banana 2" 일러스트레이터 기동 및 동시성 렌더링 파이프라인 개시`, 'manager');
+      setNodeState('illustrator', 'active', 'gpt-image-2 고품질 자산 렌더링 중');
+      addLog(`[드로잉 전문가] OpenAI "gpt-image-2" Illustrator Agent 기동 (quality: high)`, 'manager');
 
       try {
         const response = await fetch('/api/generate-material', {
@@ -295,7 +333,8 @@ export default function Home() {
             age,
             style,
             additional,
-            key: apiKey
+            key: apiKey,
+            openAiKey: openAiApiKey
           })
         });
 
@@ -310,7 +349,8 @@ export default function Home() {
         setNodeState('writer', 'completed', '집필 완료');
         await sleep(500);
 
-        addLog(`[드로잉 완료] "nano-banana 2" 모델 드로잉 그림 카드 세트(Watercolor/Line-art/Blueprint) 완성!`, 'illustrator');
+        const illustratedData = await generateVisualAssets(result.data, addLog);
+        addLog(`[드로잉 완료] gpt-image-2 최고 품질 실제 이미지 자산 생성 완료!`, 'illustrator');
         setNodeState('illustrator', 'completed', '시각 자산 준비 완료');
         await sleep(500);
 
@@ -328,11 +368,11 @@ export default function Home() {
         setNodeState('chief', 'completed', '최종 검증 완료');
         addLog('하위 에이전트로부터 전달받은 최종 결과물의 상호 조화 무결성을 심사합니다.', 'chief');
         await sleep(600);
-        addLog('검증 성공! 실제 생성된 nano-banana 2 그림 퀄리티 및 아동 발달학적 완성도가 교구 심의 기준을 통과했습니다.', 'chief');
+        addLog('검증 성공! 실제 생성된 gpt-image-2 고품질 이미지와 아동 발달 적합성을 확인했습니다.', 'chief');
         await sleep(500);
         addLog('실제 Gemini API 계층 트리 오케스트레이션 완료! 교구 결과물을 렌더링합니다.', 'success');
 
-        setGenerationData(result.data);
+        setGenerationData(illustratedData);
         setShowResult(true);
 
       } catch (error) {
@@ -354,19 +394,19 @@ export default function Home() {
       addLog(`"${topic}" 주제에 어울리는 유아 맞춤형 텍스트 설정을 완료하여 Manager에 보고합니다.`, 'writer');
       await sleep(600);
 
-      // 4단계: Visual Specialist (nano-banana 2 드로잉 모델 연동)
+      // 4단계: Visual Specialist (시뮬레이션 모드)
       setNodeState('writer', 'completed', '어휘/텍스트 필터링 통과');
       const isLineArt = materialType === 'worksheet' || materialType === 'pattern';
       const visualLabel = isLineArt ? 'Line-Art Specialist' : 'Illustrator Agent';
       setNodeState('illustrator', 'active', isLineArt ? '선화 렌더링 중' : '드로잉 이미지 렌더링 중');
-      addLog(`[드로잉 전문가] "nano-banana 2" 모델 전담 [${visualLabel}] 기동`, 'manager');
+      addLog(`[드로잉 전문가] gpt-image-2 전담 [${visualLabel}] 시뮬레이션 기동`, 'manager');
       await sleep(800);
-      addLog(`[API 호출] "nano-banana 2" 생성형 모델 파이프라인 연동 중...`, 'illustrator');
+      addLog(`[시뮬레이션] 실제 API 호출 없이 gpt-image-2 결과 레이아웃을 미리 봅니다.`, 'illustrator');
       await sleep(1000);
       if (isLineArt) {
         addLog(`인쇄용 및 오리기 활동에 최적화된 흑백 외곽선 드로잉 라인아트를 오차 없이 렌더링합니다.`, 'illustrator');
       } else {
-        addLog(`nano-banana 2 드로잉 특유의 밝고 친근하며 명확한 캐릭터 삽화 자산을 생성합니다.`, 'illustrator');
+        addLog(`gpt-image-2용 밝고 친근하며 명확한 캐릭터 삽화 구성을 미리 봅니다.`, 'illustrator');
       }
       await sleep(1400);
       addLog(`[완료] 드로잉 삽화 그래픽 자산이 성공적으로 패키징되었습니다.`, 'illustrator');
@@ -377,7 +417,7 @@ export default function Home() {
       setNodeState('layout', 'active', '인쇄용 HTML 조립 중');
       addLog(`[퍼블리셔] 최종 결과물 빌드를 담당할 "Layout Publisher" 소출`, 'manager');
       await sleep(800);
-      addLog(`Writer의 텍스트와 nano-banana 2 드로잉 자산을 바인딩하여 A4 반응형 인쇄 가이드를 준수해 정렬합니다.`, 'layout');
+      addLog(`Writer의 텍스트와 Illustrator Agent 자산을 바인딩하여 A4 인쇄 가이드에 맞게 정렬합니다.`, 'layout');
       await sleep(1400);
       addLog(`인쇄 가이드 및 UI 매칭 컴파일 작업을 완성하여 총괄 디렉터에 조립 완료본을 제출합니다.`, 'layout');
       await sleep(800);
@@ -387,7 +427,7 @@ export default function Home() {
       setNodeState('chief', 'completed', '최종 검증 완료');
       addLog('하위 에이전트로부터 전달받은 최종 결과물의 상호 조화 무결성을 심사합니다.', 'chief');
       await sleep(600);
-      addLog('검증 성공! nano-banana 2 그림 퀄리티 및 아동 발달학적 완성도가 교구 심의 기준을 통과했습니다.', 'chief');
+      addLog('시뮬레이션 검증 완료! 실제 생성 모드에서는 gpt-image-2 고품질 이미지가 적용됩니다.', 'chief');
       await sleep(500);
       addLog('계층 트리 오케스트레이션 완료! 교구 결과물을 렌더링하여 화면에 표출합니다.', 'success');
 
@@ -451,7 +491,7 @@ export default function Home() {
           <div className="logo-section">
             <div className="logo-main">
               <div className="logo-icon">🎨</div>
-              <h1>AI 활용 유아교재교구 제작 (Gemini 3.5 Flash)</h1>
+              <h1>AI 활용 유아교재교구 제작 (Gemini + GPT Image)</h1>
             </div>
             {/* 설정 서랍 토글 버튼 */}
             <button className="settings-toggle-btn" onClick={() => setIsSettingsOpen(true)}>
@@ -459,7 +499,7 @@ export default function Home() {
             </button>
           </div>
           <p className="subtitle">
-            계층 트리 에이전트 오케스트레이션 기반 "nano-banana 2 (pro)" 모델 드로잉 교구 생성 플랫폼
+            Gemini 콘텐츠 기획과 OpenAI gpt-image-2 최고 품질 시각 자산을 결합한 교구 생성 플랫폼
           </p>
         </div>
         <div className="header-decoration"></div>
@@ -494,6 +534,20 @@ export default function Home() {
             onChange={(e) => setTempKey(e.target.value)}
           />
         </div>
+
+        <div className="input-group">
+          <label htmlFor="openai-key">OpenAI API Key (gpt-image-2)</label>
+          <input
+            type="password"
+            id="openai-key"
+            placeholder="sk-... (서버에 OPENAI_API_KEY가 있으면 생략 가능)"
+            value={tempOpenAiKey}
+            onChange={(e) => setTempOpenAiKey(e.target.value)}
+          />
+          <small style={{ color: 'var(--text-secondary)' }}>
+            {openAiApiKey ? 'OpenAI 키 수동 연동 완료' : '수동 키 미입력 — 서버 OPENAI_API_KEY가 있으면 자동 사용'}
+          </small>
+        </div>
         
         <button className="save-key-btn" onClick={handleSaveManualKey}>
           키 설정 및 저장
@@ -501,7 +555,7 @@ export default function Home() {
 
         <div className="settings-info-box" style={{ marginTop: '20px' }}>
           <h4>💡 바탕화면 자동 연동 방법</h4>
-          윈도우 바탕화면(<code>C:\Users\LG\Desktop</code>)에 <code>gemini_api_key.txt</code> 파일을 생성하고 그 안에 Gemini API Key만 한 줄로 적어두면 별도 입력 없이 대시보드 진입 시 자동으로 로딩되어 AI 실제 생성을 사용할 수 있습니다!
+          Gemini 키는 기존 <code>gemini_api_key.txt</code> 또는 <code>GEMINI_API_KEY</code>를 사용합니다. 실제 이미지 생성을 위해 배포 서버에 <code>OPENAI_API_KEY</code>를 설정하거나 위 입력란에 OpenAI 키를 입력하세요. 키는 브라우저에 영구 저장하지 않습니다.
         </div>
 
         <div className="input-group" style={{ marginTop: '10px' }}>
@@ -518,7 +572,7 @@ export default function Home() {
               }}
               style={{ width: 'auto' }}
             />
-            <span style={{ fontWeight: 600 }}>실제 Gemini API 생성 모드 활성화</span>
+            <span style={{ fontWeight: 600 }}>실제 Gemini + gpt-image-2 생성 모드 활성화</span>
           </label>
         </div>
       </div>
@@ -639,7 +693,7 @@ export default function Home() {
           <section className="tab-content active">
             <div className="section-header">
               <h2>🚀 생성형 AI 활용 실습 인터페이스</h2>
-              <p>계층 에이전트를 조율하고 'nano-banana 2' 드로잉 교구 카드를 자동 빌드해 보세요</p>
+              <p>계층 에이전트를 조율하고 gpt-image-2 고품질 이미지 교구를 자동으로 만들어 보세요</p>
               <AgentModeBadge isRealGeneration={isRealMode} />
             </div>
 
@@ -770,7 +824,7 @@ export default function Home() {
                       <h4>💬 프롬프트 및 에이전트 구조 안내</h4>
                       <ul>
                         <li>에이전트 총괄 디렉터가 이 기획문을 분석하여 각 전문가에 연동시킵니다.</li>
-                        <li>비주얼 그래픽 부분은 <strong>"nano-banana 2"</strong> 드로잉 생성 모델이 직접 그림을 그리게 지시합니다.</li>
+                        <li>Illustrator Agent는 <strong>OpenAI gpt-image-2</strong>를 최고 품질(high)로 호출해 실제 이미지를 생성합니다.</li>
                       </ul>
                     </div>
                   </div>
@@ -799,7 +853,7 @@ export default function Home() {
                     {/* 최종 드로잉 교구 프리뷰 */}
                     {showResult && (
                       <div className="result-preview active" id="result-preview" style={{ animation: 'fadeIn 0.5s ease-in-out' }}>
-                        <h4>📦 최종 nano-banana 2 드로잉 교구 시각화 및 프린트</h4>
+                        <h4>📦 최종 gpt-image-2 고품질 교구 시각화 및 프린트</h4>
                         <div id="preview-grid" className="preview-grid-wrapper" style={{ marginTop: '20px' }}>
                           {materialType === 'storybook' && <StorybookCard topic={topic} age={age} data={generationData} />}
                           {materialType === 'flashcard' && <Flashcard3D items={dynamicItems} age={age} data={generationData} />}
@@ -824,7 +878,7 @@ export default function Home() {
                           <span>✅</span><span>계층형 트리 에이전트 오케스트레이션 완료 ✓</span>
                         </div>
                         <div className="checklist-item checked">
-                          <span>✅</span><span>nano-banana 2 이미지 생성 파이프라인 렌더링 완료 ✓</span>
+                          <span>✅</span><span>gpt-image-2 최고 품질 이미지 생성 파이프라인 완료 ✓</span>
                         </div>
                         <div className="checklist-item checked">
                           <span>✅</span><span>유아용 인쇄 규격 레이아웃 패키징 완료 ✓</span>
@@ -889,7 +943,7 @@ export default function Home() {
 
       {/* 푸터 */}
       <footer className="main-footer">
-        <p>🌟 Next.js &amp; nano-banana 2 기반 계층형 트리 에이전트 교구 제작 시스템</p>
+        <p>🌟 Next.js, Gemini &amp; OpenAI gpt-image-2 기반 계층형 에이전트 교구 제작 시스템</p>
       </footer>
     </div>
   );
