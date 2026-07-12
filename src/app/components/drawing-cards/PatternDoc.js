@@ -1,3 +1,4 @@
+/* eslint-disable @next/next/no-img-element */
 export default function PatternDoc({ topic, age, items, data }) {
   const fallbackParts = [
     { name: '왕관 띠', emoji: '👑' }
@@ -10,8 +11,8 @@ export default function PatternDoc({ topic, age, items, data }) {
   return (
     <div className="bananacard-container printable-book-page" style={{ padding: '30px' }}>
       <div className="bananacard-header">
-        <span className="bananacard-badge">🎨 nano-banana 2 (pro) DRAWING CARD</span>
-        <span className="bananacard-model-tag">Model: nano-banana 2 (pro) (Blueprint HD)</span>
+        <span className="bananacard-badge">🎨 GPT-IMAGE-2 CRAFT PATTERN</span>
+        <span className="bananacard-model-tag">Quality: {data?.imageGeneration?.quality || 'Preview'} · {data?.imageGeneration?.size || 'Responsive'}</span>
       </div>
 
       <div className="pattern-blueprint" style={{ width: '100%' }}>
@@ -22,6 +23,9 @@ export default function PatternDoc({ topic, age, items, data }) {
         
         <div className="blueprint-canvas">
           <div className="drawing-sketch-frame" style={{ padding: '10px', background: '#FAF8F6', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+            {data?.imageDataUrl ? (
+              <img src={data.imageDataUrl} alt={`${topic} 만들기 인쇄 도안`} style={{ width: '100%', maxHeight: '620px', objectFit: 'contain' }} />
+            ) : (
             <svg className="blueprint-svg" viewBox="0 0 200 120" width="100%" height="220">
               {/* 외곽 실선 오리기선 */}
               <rect x="10" y="40" width="180" height="40" fill="none" stroke="#2D3748" strokeWidth="2"/>
@@ -43,15 +47,16 @@ export default function PatternDoc({ topic, age, items, data }) {
               {/* 가위 아이콘 장식 */}
               <text x="182" y="36" fontSize="10">✂️</text>
             </svg>
+            )}
           </div>
         </div>
       </div>
 
       <div className="bananacard-footer">
-        <span>Model Version: nano-banana-v2-pro-blueprint</span>
-        <span>Resolution: 2048x2048 | Steps: 50</span>
+        <span>Model: {data?.imageGeneration?.model || 'Preview'}</span>
+        <span>{data?.imageGeneration?.size || 'Responsive'} | Quality: {data?.imageGeneration?.quality || 'simulation'}</span>
       </div>
-      <div className="bananacard-watermark">banana2</div>
+      <div className="bananacard-watermark">image2</div>
     </div>
   );
 }
