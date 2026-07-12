@@ -1,19 +1,17 @@
 import { NextResponse } from 'next/server';
 
+function normalizeKey(value) {
+  if (!value) return '';
+  const trimmed = value.trim();
+  return trimmed.includes('=') ? trimmed.split('=').pop().trim() : trimmed;
+}
+
 export async function POST(request) {
   try {
     const { type, topic, age, style, additional, key } = await request.json();
 
     // Use user-provided API key from settings or fallback to the system environment variable
-    let apiKey = key || process.env.GEMINI_API_KEY;
-
-    if (apiKey) {
-      apiKey = apiKey.trim();
-      // Auto-strip prefixes like "gemini api_KEY=" or "API_KEY="
-      if (apiKey.includes('=')) {
-        apiKey = apiKey.split('=').pop().trim();
-      }
-    }
+    const apiKey = normalizeKey(key || process.env.GEMINI_API_KEY);
 
     if (!apiKey) {
       return NextResponse.json({
@@ -38,8 +36,9 @@ export async function POST(request) {
 
     const systemPrompt = `You are a professional Early Childhood Education Content Planner and Props Designer.
 Create a high-quality educational resource for age 만 ${age}세 about the topic "${topic}".
-The visual drawings are powered by the premium "nano-banana 2 (pro)" watercolor illustration model.
-Style context: Cozy watercolor sketch style, bright pastel palettes, warm harmonious lighting, cute child-friendly textbooks illustration with soft outlines.
+The visual assets will be rendered separately by OpenAI gpt-image-2 at high quality.
+Write precise, concrete visual descriptions suitable for a high-end children's educational illustration pipeline.
+Style context: ${style || 'Cozy watercolor sketch style'}, bright pastel palettes, warm harmonious lighting, cute child-friendly textbook illustration with clean silhouettes.
 
 Additional requirements: ${additional || 'None'}.
 
