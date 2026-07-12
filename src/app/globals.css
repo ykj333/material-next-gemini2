@@ -1088,7 +1088,7 @@ body {
     box-shadow: 0 8px 25px rgba(168, 230, 207, 0.6);
 }
 
-/* ===== nano-banana 2 드로잉 카드 스타일 ===== */
+/* ===== GPT Image 교구 카드 스타일 ===== */
 .bananacard-container {
     width: 100%;
     background: white;
@@ -1325,38 +1325,75 @@ body {
 
 /* 인쇄 스타일 */
 @media print {
-    body * { visibility: hidden; }
-    .preview-grid-wrapper, .preview-grid-wrapper * { visibility: visible; }
+    @page {
+        size: A4 portrait;
+        margin: 0;
+    }
+
+    html,
+    body {
+        width: 210mm;
+        margin: 0 !important;
+        padding: 0 !important;
+        background: white !important;
+    }
+
+    body.printing-result * { visibility: hidden; }
+    body.printing-result .preview-grid-wrapper,
+    body.printing-result .preview-grid-wrapper * { visibility: visible; }
     .preview-grid-wrapper {
-        position: absolute;
-        left: 0;
-        top: 0;
-        width: 100%;
+        position: fixed !important;
+        inset: 0 auto auto 0 !important;
+        z-index: 2147483647;
+        width: 210mm !important;
         height: auto;
         display: block !important;
         background: white !important;
         padding: 0 !important;
         margin: 0 !important;
+        overflow: visible !important;
+        transform: none !important;
     }
     .printable-book-page {
-        page-break-after: always;
-        width: 210mm;
-        height: 297mm;
-        box-sizing: border-box;
-        padding: 20mm;
-        display: flex;
+        width: 190mm !important;
+        min-height: 277mm;
+        height: auto !important;
+        margin: 10mm !important;
+        padding: 10mm !important;
+        border-radius: 0 !important;
+        box-shadow: none !important;
+        box-sizing: border-box !important;
+        display: flex !important;
         flex-direction: column;
-        justify-content: space-between;
-        align-items: center;
+        justify-content: flex-start !important;
+        align-items: stretch !important;
         background: white !important;
         color: black !important;
+        break-inside: avoid-page;
+        page-break-inside: avoid;
+        page-break-after: always;
+    }
+    .printable-book-page > .bananacard-footer {
+        margin-top: auto !important;
+    }
+    .printable-book-page .drawing-sketch-frame,
+    .printable-book-page svg {
+        print-color-adjust: exact;
+        -webkit-print-color-adjust: exact;
     }
     .printable-card-grid {
-        display: grid;
+        display: grid !important;
         grid-template-columns: repeat(2, 1fr);
-        gap: 15mm;
-        width: 210mm;
-        padding: 10mm;
+        gap: 8mm !important;
+        width: 190mm !important;
+        margin: 10mm !important;
+        padding: 0 !important;
+        box-sizing: border-box;
         background: white !important;
+    }
+    .printable-card-grid .bananacard-container {
+        box-shadow: none !important;
+        break-inside: avoid;
+        page-break-inside: avoid;
     }
 }

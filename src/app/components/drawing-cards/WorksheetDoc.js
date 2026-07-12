@@ -1,3 +1,4 @@
+/* eslint-disable @next/next/no-img-element */
 export default function WorksheetDoc({ topic, age, items, data }) {
   const fallbackCards = [
     { kor: '사과', eng: 'Apple', emoji: '🍎' },
@@ -19,8 +20,8 @@ export default function WorksheetDoc({ topic, age, items, data }) {
   return (
     <div className="bananacard-container printable-book-page" style={{ padding: '30px' }}>
       <div className="bananacard-header">
-        <span className="bananacard-badge">🎨 nano-banana 2 (pro) DRAWING CARD</span>
-        <span className="bananacard-model-tag">Model: nano-banana 2 (pro) (Line-Art HD)</span>
+        <span className="bananacard-badge">🎨 GPT-IMAGE-2 LINE ART</span>
+        <span className="bananacard-model-tag">Quality: {data?.imageGeneration?.quality || 'Preview'} · {data?.imageGeneration?.size || 'Responsive'}</span>
       </div>
 
       <div className="worksheet-border">
@@ -49,9 +50,12 @@ export default function WorksheetDoc({ topic, age, items, data }) {
         </div>
         
         <div className="worksheet-section">
-          <div className="section-title">🖍️ [활동 2] 아래 그림 속 "{topic}"을 내 맘대로 멋지게 색칠해 보세요!</div>
+          <div className="section-title">🖍️ [활동 2] 아래 그림 속 “{topic}”을 내 맘대로 멋지게 색칠해 보세요!</div>
           <div className="coloring-canvas-mock">
             <div className="drawing-sketch-frame" style={{ padding: '20px', background: 'white', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+              {data?.imageDataUrl ? (
+                <img src={data.imageDataUrl} alt={`${topic} 색칠 활동 선화`} style={{ width: '100%', maxHeight: '360px', objectFit: 'contain' }} />
+              ) : (
               <svg className="coloring-svg-mock" viewBox="0 0 100 100" width="120" height="120">
                 {isFlower ? (
                   <>
@@ -77,6 +81,7 @@ export default function WorksheetDoc({ topic, age, items, data }) {
                   <polygon points="50,5 64,36 98,36 70,57 81,91 50,70 19,91 30,57 2,36 36,36" fill="none" stroke="#2D3748" strokeWidth="2"/>
                 )}
               </svg>
+              )}
             </div>
             
             <div className="coloring-palette-mock">
@@ -92,10 +97,10 @@ export default function WorksheetDoc({ topic, age, items, data }) {
       </div>
 
       <div className="bananacard-footer">
-        <span>Model Version: nano-banana-v2-pro-lineart</span>
-        <span>Resolution: 2048x2048 | CFG: 8.5</span>
+        <span>Model: {data?.imageGeneration?.model || 'Preview'}</span>
+        <span>{data?.imageGeneration?.size || 'Responsive'} | Quality: {data?.imageGeneration?.quality || 'simulation'}</span>
       </div>
-      <div className="bananacard-watermark">banana2</div>
+      <div className="bananacard-watermark">image2</div>
     </div>
   );
 }

@@ -1,4 +1,5 @@
 'use client';
+/* eslint-disable @next/next/no-img-element */
 
 import { useState } from 'react';
 
@@ -34,19 +35,23 @@ export default function StorybookCard({ topic, age, data }) {
   return (
     <div className="bananacard-container printable-book-page" style={{ padding: '24px 30px' }}>
       <div className="bananacard-header">
-        <span className="bananacard-badge">🎨 nano-banana 2 (pro) DRAWING CARD</span>
-        <span className="bananacard-model-tag">Model: nano-banana 2 (pro) (Watercolor Masterpiece)</span>
+        <span className="bananacard-badge">🎨 GPT-IMAGE-2 ILLUSTRATION</span>
+        <span className="bananacard-model-tag">Quality: {data?.imageGeneration?.quality || 'Preview'} · {data?.imageGeneration?.size || 'Responsive'}</span>
       </div>
 
       <div className="storybook-container" style={{ width: '100%' }}>
         <div className="storybook-header" style={{ fontSize: '1.15rem', fontWeight: 700, color: 'var(--text-secondary)', textAlign: 'center', marginBottom: '20px' }}>
-          📖 "{topic}" 그림책 (만 {age}세 발달 맞춤형)
+          📖 “{topic}” 그림책 (만 {age}세 발달 맞춤형)
         </div>
         
         <div className="storybook-page-content" style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
-          {/* nano-banana 2 (pro) 드로잉 스타일의 프레임 - 더 크게 변경 및 디자인 향상 */}
+          {/* 실제 생성 이미지 또는 시뮬레이션용 대체 시각 자산 */}
           <div className="drawing-sketch-frame" style={{ background: bgGradient, fontSize: '6.5rem', display: 'flex', alignItems: 'center', justifyContent: 'center', height: '340px', borderRadius: 'var(--border-radius-md)', border: '6px solid white', boxShadow: '0 10px 30px rgba(0,0,0,0.12)', transition: 'all 0.3s ease' }}>
-            <span style={{ filter: 'drop-shadow(0 6px 12px rgba(0,0,0,0.2))' }}>{pageData.art || '📖'}</span>
+            {pageData.imageDataUrl ? (
+              <img src={pageData.imageDataUrl} alt={`${topic} 그림책 ${currentPage + 1}쪽 삽화`} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+            ) : (
+              <span style={{ filter: 'drop-shadow(0 6px 12px rgba(0,0,0,0.2))' }}>{pageData.art || '📖'}</span>
+            )}
           </div>
           
           <div className="storybook-text" style={{ fontSize: '1.15rem', lineHeight: '1.9', textAlign: 'center', fontWeight: '600', minHeight: '80px', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--text-primary)', padding: '0 16px' }}>
@@ -76,10 +81,10 @@ export default function StorybookCard({ topic, age, data }) {
       </div>
 
       <div className="bananacard-footer">
-        <span>Prompt: "{pageData.prompt || 'Cute watercolor sketch'}"</span>
-        <span>Resolution: 2048x2048 | Steps: 50 | CFG: 9.0</span>
+        <span>Prompt: “{pageData.prompt || 'Cute watercolor sketch'}”</span>
+        <span>Model: {data?.imageGeneration?.model || 'Preview'} | Quality: {data?.imageGeneration?.quality || 'simulation'}</span>
       </div>
-      <div className="bananacard-watermark">banana2pro</div>
+      <div className="bananacard-watermark">image2</div>
     </div>
   );
 }
