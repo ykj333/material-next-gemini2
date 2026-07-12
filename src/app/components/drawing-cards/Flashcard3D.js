@@ -1,4 +1,5 @@
 'use client';
+/* eslint-disable @next/next/no-img-element */
 
 import { useState } from 'react';
 
@@ -28,8 +29,8 @@ export default function Flashcard3D({ data, items, age }) {
         {cardsList.map((item, idx) => (
           <div key={idx} className="bananacard-container" style={{ padding: '16px', display: 'flex', flexDirection: 'column', height: '360px' }}>
             <div className="bananacard-header" style={{ marginBottom: '10px', paddingBottom: '6px' }}>
-              <span className="bananacard-badge" style={{ fontSize: '0.65rem', padding: '2px 6px' }}>🎨 nano-banana 2 (pro)</span>
-              <span className="bananacard-model-tag" style={{ fontSize: '0.65rem', padding: '2px 6px' }}>High-Fi Card</span>
+              <span className="bananacard-badge" style={{ fontSize: '0.65rem', padding: '2px 6px' }}>🎨 GPT-IMAGE-2</span>
+              <span className="bananacard-model-tag" style={{ fontSize: '0.65rem', padding: '2px 6px' }}>{data?.imageGeneration?.quality || 'Preview'} quality</span>
             </div>
 
             <div 
@@ -41,7 +42,11 @@ export default function Flashcard3D({ data, items, age }) {
                 {/* 앞면 */}
                 <div className="flashcard-front">
                   <div className="drawing-sketch-frame" style={{ width: '100%', height: '130px', display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#F8FAFC', marginBottom: '8px', border: '3px solid white', borderRadius: '12px', boxShadow: '0 4px 10px rgba(0,0,0,0.06)' }}>
-                    <span className="card-art" style={{ fontSize: '3.5rem', margin: 0, filter: 'drop-shadow(0 4px 8px rgba(0,0,0,0.12))' }}>{item.emoji}</span>
+                    {item.imageDataUrl ? (
+                      <img src={item.imageDataUrl} alt={`${item.kor} 플래시카드 그림`} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                    ) : (
+                      <span className="card-art" style={{ fontSize: '3.5rem', margin: 0, filter: 'drop-shadow(0 4px 8px rgba(0,0,0,0.12))' }}>{item.emoji}</span>
+                    )}
                   </div>
                   <div className="card-title-kor" style={{ fontSize: '1.35rem', fontWeight: 'bold' }}>{item.kor}</div>
                   <div className="card-title-eng" style={{ fontSize: '0.95rem' }}>{item.eng}</div>
@@ -57,8 +62,8 @@ export default function Flashcard3D({ data, items, age }) {
             </div>
 
             <div className="bananacard-footer" style={{ marginTop: '10px', paddingTop: '6px', fontSize: '0.65rem' }}>
-              <span>Resolution: 2048x2048 | CFG: 8.5</span>
-              <span>Model: banana-2-pro-sketch</span>
+              <span>{data?.imageGeneration?.size || 'Preview'} | {data?.imageGeneration?.quality || 'simulation'}</span>
+              <span>Model: {data?.imageGeneration?.model || 'Preview'}</span>
             </div>
           </div>
         ))}
