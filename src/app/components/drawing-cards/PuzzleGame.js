@@ -1,4 +1,5 @@
 'use client';
+/* eslint-disable @next/next/no-img-element */
 
 import { useState, useEffect } from 'react';
 
@@ -32,10 +33,14 @@ export default function PuzzleGame({ data, items, age }) {
       [gameItems[i], gameItems[j]] = [gameItems[j], gameItems[i]];
     }
 
-    setCards(gameItems);
-    setSelectedCards([]);
-    setScore(0);
-    setWon(false);
+    const resetGame = window.setTimeout(() => {
+      setCards(gameItems);
+      setSelectedCards([]);
+      setScore(0);
+      setWon(false);
+    }, 0);
+
+    return () => window.clearTimeout(resetGame);
   }, [cardsList]);
 
   const handleCardClick = (card, idx) => {
@@ -84,8 +89,8 @@ export default function PuzzleGame({ data, items, age }) {
   return (
     <div className="bananacard-container" style={{ padding: '24px' }}>
       <div className="bananacard-header">
-        <span className="bananacard-badge">🎨 nano-banana 2 (pro) DRAWING CARD</span>
-        <span className="bananacard-model-tag">Model: nano-banana 2 (pro) (Game Pack)</span>
+        <span className="bananacard-badge">🎨 GPT-IMAGE-2 GAME ASSETS</span>
+        <span className="bananacard-model-tag">Quality: {data?.imageGeneration?.quality || 'Preview'}</span>
       </div>
 
       <div className="puzzle-game-mockup" style={{ border: 'none', padding: 0, width: '100%' }}>
@@ -102,7 +107,11 @@ export default function PuzzleGame({ data, items, age }) {
               onClick={() => handleCardClick(card, idx)}
             >
               <div className="puzzle-card-front">❓</div>
-              <div className="puzzle-card-back">{card.emoji}</div>
+              <div className="puzzle-card-back">
+                {card.imageDataUrl ? (
+                  <img src={card.imageDataUrl} alt={`${card.kor} 맞추기 카드`} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                ) : card.emoji}
+              </div>
             </div>
           ))}
         </div>
@@ -114,9 +123,9 @@ export default function PuzzleGame({ data, items, age }) {
 
       <div className="bananacard-footer">
         <span>Game Seed: 94029 | Cards: 8</span>
-        <span>Drawing: nano-banana-v2-pro-game</span>
+        <span>Drawing: {data?.imageGeneration?.model || 'Preview'}</span>
       </div>
-      <div className="bananacard-watermark">banana2</div>
+      <div className="bananacard-watermark">image2</div>
     </div>
   );
 }
